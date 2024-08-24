@@ -22,4 +22,4 @@ def get_transcript():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(port=10000)
+    app.run(port=8080)
