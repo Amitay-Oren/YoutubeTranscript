@@ -5,6 +5,10 @@ from youtube_transcript_api import YouTubeTranscriptApi
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Welcome to the YouTube Transcript API!"}), 200
+
 @app.route("/get_transcript", methods=["GET"])
 def get_transcript():
     video_id = request.args.get("video_id")
