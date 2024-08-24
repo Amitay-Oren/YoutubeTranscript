@@ -1,13 +1,31 @@
 import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import YouTubeTranscriptApi, YouTubeTranscriptApiFetcher
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
+import requests
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
 logging.basicConfig(level=logging.INFO)
+
+# Custom headers to mimic a real browser request
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Referer': 'https://www.youtube.com/',
+}
+
+# Override the _fetch_transcripts method to include headers
+class CustomYouTubeTranscriptApiFetcher(YouTubeTranscriptApiFetcher):
+    def _fetch_transcripts(self, video_id, languages):
+        url = f"https://www.youtube.com/api/timedtext?type=list&v={video_id}"
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return self._parse_transcripts(response.text)
+
+# Use the custom fetcher
+YouTubeTranscriptApi.fetcher = CustomYouTubeTranscriptApiFetcher()
 
 @app.route("/", methods=["GET"])
 def home():
